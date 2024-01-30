@@ -1,5 +1,9 @@
-from constants import *
-import tqdm, glob, os 
+from constants import TEMPSAVEPATH, SAVEPATH, SAVEMETHOD, VIDEOPATH, batch_filename, T, percentage_of_pts_tosave, dt, W, H
+
+import numpy as np
+import tqdm
+import glob
+import os 
 import xarray as xr
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -8,7 +12,7 @@ import matplotlib.patches as mpatches
 ########################
 ## Utils for merging a stack of .nc file after a batch run 
 
-def merge_ds():
+def merge_ds(light=False, dropped_vars=['X', 'V'], dropped_dims=['fish'], delete_files=False):
 
     dspaths = glob.glob(f'{TEMPSAVEPATH}/*.nc')
     dslist = []
@@ -16,14 +20,20 @@ def merge_ds():
 
     for file in tqdm.tqdm(dspaths):
         ds_temp = xr.load_dataset(file)
+        if light: 
+            ds_temp = ds_temp.drop(dropped_vars)
+            ds_temp = ds_temp.drop_dims(dropped_dims)
         dslist.append(ds_temp)
+        
+        ds_temp.close()
 
     ds = xr.combine_by_coords(dslist, combine_attrs='drop_conflicts') 
-    ds.to_netcdf(os.path.join(SAVEPATH, f'{filename}.nc'))
+    ds.to_netcdf(os.path.join(SAVEPATH, f'{batch_filename}.nc'))
 
-    for file in os.scandir(TEMPSAVEPATH):
-        os.remove(file.path)
-
+    if delete_files: 
+        for file in os.scandir(TEMPSAVEPATH):
+            os.remove(file.path)
+        
 ########################
 ## Utils for saving trajectories 
 
@@ -138,8 +148,10 @@ def animate(traj, acc=5, save=False, draw_quiv=False, fov=False, tailsec=0.5):
 
         all_lines = [line, lines, title]
 
-        if draw_quiv: all_lines = all_lines + [quiv]
-        if fov: all_lines = all_lines + Ra + Rvis
+        if draw_quiv: 
+            all_lines = all_lines + [quiv]
+        if fov: 
+            all_lines = all_lines + Ra + Rvis
 
         return  all_lines
 
