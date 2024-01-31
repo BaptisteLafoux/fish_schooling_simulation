@@ -15,7 +15,7 @@ v_ini       = 1
 Treal       = 100 #in seconds
 
 # timestep in physical time
-dt          = 1 / 50 #in second
+dt          = 1 / 200 #in second
 
 # number of timesteps in the simulation 
 T           = int(Treal // dt) + 1

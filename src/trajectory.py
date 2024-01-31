@@ -26,12 +26,6 @@ class Trajectory:
             dt = dt,
         )
 
-        self.fnoise = simu.fnoise
-        self.fp = simu.fp
-        self.fal = simu.fal
-        self.fat = simu.fat
-        self.fwall = simu.fwall
-
         self.filename = get_filename(params)
 
         params.update({'rep': get_rep_number(params)})

@@ -142,8 +142,8 @@ def animate(traj, acc: int=5, save=False, draw_quiv=False, fov=False, tailsec=0.
     ## length of tail in timesteps
     tail = int(tailsec / dt) 
     
-    ## base acceleration for saved movies, because otherwise they would be impossible to show on screen and too heavy to save. This means that we reduce the time resolution of movies by 'baseacc'
-    baseacc = 5
+    ## base acceleration for saved movies, because otherwise they would be impossible to show on screen and too heavy to save. This means that we reduce the time resolution of movies by 'baseacc'. Increase it if movies are shaky
+    baseacc = 10
     
     ## convert and get useful data
     theta = np.arctan2(traj.vel[1], traj.vel[0]) * 180 / np.pi

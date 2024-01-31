@@ -1,16 +1,25 @@
+"""
+Created on Wed Jan 31 13:57:22 2023
+
+Defines the 'Simulation' class, to initialize positions and enforce the integration scheme by creating a `Step`object at each timestep.
+
+The script can be directly executed to run a single simulation. 
+Usage: python simulation.py (for instance)
+
+@author: BaptisteLafoux
+"""
+
 import numpy as np
-
-from constants import *
 import tqdm
-from trajectory import Trajectory
-from step import Step
-
-
-from utils import animate
 np.seterr(all='ignore')
 
+#homemade modules 
+from constants import *
+from trajectory import Trajectory
+from step import Step
+from utils import animate
+
 class ErrorSimulationExploded(Exception):
-    'Error in calculation, skipping this simulation ! Ciao >>>'
     pass
 
 class Simulation:
@@ -32,40 +41,54 @@ class Simulation:
         )
 
         self.N = N
+        self.pos = np.zeros((2, self.N, T))
+        self.vel = np.zeros((2, self.N, T))
 
     def _init_traj(self):
-        pos = np.zeros((2, self.N, T))
-        vel = np.zeros((2, self.N, T))
 
-        pos[0, :, 0] = np.random.uniform(0, W, self.N)
-        pos[1, :, 0] = np.random.uniform(0, H, self.N)
-        vel[..., 0]  = np.random.normal(0, v_ini, (2, self.N))
-        return pos, vel
+        self.pos[0, :, 0] = np.random.uniform(0, W, self.N)
+        self.pos[1, :, 0] = np.random.uniform(0, H, self.N)
+        
+        self.vel[..., 0]  = np.random.normal(0, v_ini, (2, self.N))
 
-    def run(self):
-        pos, vel = self._init_traj()
+    def run(self, savedata=True):
+        """compute positions ond velocities at each timestep. 
 
-        self.fnoise, self.fp, self.fal, self.fat, self.fwall = np.zeros((2, self.N, T)), np.zeros((2, self.N, T)), np.zeros((2, self.N, T)), np.zeros((2, self.N, T)), np.zeros((2, self.N, T))
+        Raises:
+            ErrorSimulationExploded: if at least one position is outside the boundary of the tank, stop the time loop
+
+        Returns:
+            traj (Trajectory): a trajectory object containing all the position and velocity data, and other physical quantities computed in post-processing (polarization, milling, distances)
+        """
+        self._init_traj()
 
         for t in tqdm.tqdm(range(T - 1)):
             try:
-                if not np.isfinite(pos[..., t]).all():
+                if not (self.pos[..., t] <= L).all():
                     raise ErrorSimulationExploded
-                step = Step(pos[..., t], vel[..., t], self.params)
-                self.time_step(t, step, pos, vel)
+                
+                step = Step(self.pos[..., t], self.vel[..., t], self.params)
+                
+                self.move(t, step)
 
             except ErrorSimulationExploded:
-                print('Error : STOP')
+                print('Fatal error : \tone of the positions was out-of-bound (a fish escaped the tank...)\n\tSTOP this simulation: Ciao and next >>>>')
                 break
         
         self.params['v0'] = self.v0_avg
-        traj = Trajectory(pos, vel, self.params, self)
+        
+        traj = Trajectory(self.pos, self.vel, self.params, self)
+        
+        if savedata: 
+            traj.to_netcdf() #saves the Trajectory object into an xarray dataset (.nc file) 
 
-        traj.to_netcdf()
+        return traj
 
-        return pos, vel
-
-    def time_step(self, t, step, pos, vel):
+    def move(self, t, step):
+        """Integration of the equaltions of motion: 
+        - gets the social forces from a `Step` object 
+        - updates the position and velocity arrays  
+        """
 
         fnoise  = step.get_noise_force()
         fp      = step.get_propulsion_force()
@@ -73,26 +96,24 @@ class Simulation:
         fat     = step.get_attraction_force()
         fwall   = step.get_wall_force()
 
-        vel[..., t + 1] = vel[..., t] + (fat + fal + fp + fwall) * dt + fnoise * np.sqrt(dt)
-        pos[..., t + 1] = pos[..., t] + vel[..., t + 1] * dt
-
-        self.fnoise[..., t + 1] = fnoise
-        self.fp[..., t + 1] = fp
-        self.fal[..., t + 1] = fal
-        self.fat[..., t + 1] = fat
-        self.fwall[..., t + 1] = fwall
-
+        self.vel[..., t + 1] = self.vel[..., t] + (fat + fal + fp + fwall) * dt + fnoise * np.sqrt(dt)
+        self.pos[..., t + 1] = self.pos[..., t] + self.vel[..., t + 1] * dt
         
 if __name__ == '__main__': 
 
-    N = 50
-    sim = Simulation(N=N, tau=0.5, Ra=1.5, phi=250, v0=3, R=5, J=2, eps=1, a=0.5, b=0)
-
-    pos, vel = sim.run()
-    traj = Trajectory(pos, vel, sim.params, sim)
-
-    anim = animate(traj, acc=5, draw_quiv=False, fov=False, tailsec=0.5)
-    #anim.save(f'video/temp.mp4', dpi=100, fps=1/dt / 5 / 5)
+    sim = Simulation(N=20, 
+                     tau=0.5, 
+                     Ra=5, 
+                     phi=360, #in degrees
+                     v0=3, 
+                     R=50, 
+                     J=2, 
+                     eps=1, 
+                     a=0.5, 
+                     b=0.4)
+    
+    traj = sim.run(savedata=False)
+    anim = animate(traj, acc=5, draw_quiv=False, fov=False, tailsec=1, save=False)
 
 
 
