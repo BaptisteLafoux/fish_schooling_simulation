@@ -1,19 +1,31 @@
-import multiprocessing
-import numpy as np
-import xarray as xr 
+"""
+Created on Wed Jan 31 09:57:22 2023
+
+Generates a bunch of simulation with multuiple parameters defined in 'constants' and runs them in parallel
+
+The script is intended to be directly executed.
+Usage: python main.py (for instance)
+
+@author: BaptisteLafoux
+"""
+
 from tqdm.contrib.concurrent import process_map
-from glob import glob
 
 from utils import merge_ds
 from simulation import Simulation
-from constants import *
-from multiprocessing import Pool
+from constants import taus, Js, Ns, bs, Rs, epss, v0s, As, Ras, phis, nrep, ncores
 
 def launch_simu(simu):
+    """just a wrapper to run a simulation with given parameters in the multiprocessing map 
+
+    Args:
+        simu (Simulation): a Simulation 
+    """
     simu.run()
 
 if __name__ == "__main__":
-
+    
+    ## an array of simulations 
     simulations = [Simulation(tau=tau, J=J, N=N, eps=eps, v0=v0, a=a, Ra=Ra, phi=phi, b=b, R=R) 
                               
                               for tau in taus 
@@ -30,13 +42,13 @@ if __name__ == "__main__":
                               for _ in range(nrep)
                               ]
 
-    # # with multiprocessing.Pool(ncores) as pool:
-
-    # with Pool(processes=6) as pool:
-    #     pool.map(launch_simu, simulations)
+    ## runs all the different simulations created from the arrays of parameters in "constants" on "ncores" number of parallel processors 
+    
     _ = process_map(launch_simu, simulations, max_workers=ncores)
-    merge_ds()
-
-             
-
+    
+    ## 
+    merge_ds(light=True, 
+             dropped_vars=['X', 'V'], 
+             dropped_dims=['fish'], 
+             delete_files=False)
 
