@@ -12,7 +12,7 @@ The script is not intended to be directly executed; it a module that is used by 
 v_ini       = 1
 
 # duration of simulation in physical time
-Treal       = 1000 #in seconds
+Treal       = 100 #in seconds
 
 # timestep in physical time
 dt          = 1 / 50 #in second
@@ -29,8 +29,9 @@ percentage_of_pts_tosave = 1
 
 ############# VIDEO INFORMATION ################
 
-# subsampling of the video to avoid mp4 files that are too heavy (different from acceleration)
+# subsampling of the datafiles if saved in timeseries SAVEMETHOD, to avoid .nc files that would be too heavy (typically reduces time resolution by 20) 
 subsamp     = int(1 / (20 * dt))
+
 # number of parallel processors to use 
 ncores      = 6
 
