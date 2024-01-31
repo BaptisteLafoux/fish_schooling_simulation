@@ -16,7 +16,7 @@ class Step:
         """Initialization function of a `Step` Object. Generates and attaches once and for all useful data to avoid computing them several times at each timestep. 
 
         Args:
-            - X (`np.ndarray`): Positions of the individuals in the 2D plan. numpy array  of size (2, N), N being the number of fish. x-positions: X[0], y-position: X[1]
+            - X (`np.ndarray`): Positions of the individuals in the 2D plan at a given timestep. numpy array  of size (2, N), N being the number of fish. x-positions: X[0], y-position: X[1]
             - V (`np.ndarray`): Velocities in the 2D plan, of size (2, N)
             - params (dict): a dictionary containing the simulation parameters
         """
@@ -29,7 +29,7 @@ class Step:
         self.Xij = self.X[:, None, :] - self.X[:, :, None]
         
         # rij = ||Xi - Xj|| (an epsilon value is added on the diagonal to avoid division by 0 later) -- shape = (N, N) 
-        self.rij = (self.Xij[0] ** 2 + self.Xij[1] ** 2) ** 0.5 + 1e-9*np.identity(self.params['N'])
+        self.rij = np.linalg.norm(self.Xij, axis=0) + 1e-9*np.identity(self.params['N'])
         
         # norm of the velocities -- shape = (N, )
         self.Vnorm = np.linalg.norm(self.V, axis=0) 

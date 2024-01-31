@@ -25,7 +25,7 @@ pip install requirements.txt
 ```
 Finally create useful folders like this: 
 ```
-mkdir temp output video figures
+mkdir temp video figures
 ```
 
 ## Content description 

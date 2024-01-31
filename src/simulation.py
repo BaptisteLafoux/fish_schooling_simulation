@@ -38,6 +38,7 @@ class Simulation:
             phi = phi,
             R = R,
             b = b,
+            N = N,
         )
 
         self.N = N
