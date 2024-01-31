@@ -6,10 +6,48 @@ This repository contains a set of files used to :
 
 ## Getting started 
 
+### Clone the repository
+The code runs on Python 3. Copy the following lines in your terminal to get started: 
 ```
+git clone https://github.com/BaptisteLafoux/fish_schooling_simulation
+cd fish_schooling_simulation
+```
+
+### Install the requirements 
+The code relies on different libraries (especially ```xarray``` for data storage and ```tqdm.contrib``` for parallel computing). To install them in a virtual environment (```sim-school-env```), do:
+```
+conda create -n sim-school-env python=3.11 anaconda
+```
+then,
+```
+conda activate sim-school-env
+pip install requirements.txt
+```
+Finally create useful folders like this: 
+```
+mkdir temp output
 ```
 
 ## Content description 
-- ```src/``` contains the simulation code 
-    - ```src/utils.py``` 
-    - azdazd
+### `src/` : Simulation code 
+
+- ```src/simulation.py``` 
+
+&rarr; defines the ```Simulation``` class, that initialize a collective state, creates a ```Step``` at each time step to get social forces and enforces the integration scheme. Can be  executed direcly to run a single simulation. 
+- ```src/step.py``` 
+
+&rarr; defines the ```Step``` class, used to computed the social forces at each timestep
+- ```src/trajectory.py``` 
+
+&rarr; defines the ```Trajectory``` class, used to post-process positions and velocities generated in a ```Simulation``` to get other physical quantities (polarization, milling, distances, ...), and to save data. 
+- ```src/main.py``` 
+
+&rarr; main file to run batch simulation on ranges of parameters (parameters defined in ```src/constants.py```)
+- ```src/utils.py``` 
+
+&rarr; utility functions to merge large files, generate file names and animate trajectories
+- ```src/constants.py``` 
+
+&rarr; contains useful physical and numerical constants and arrays of parameters to test during batch simulations
+
+### `postprocess-notebook/`: Post-processing code 
