@@ -16,12 +16,12 @@ cd fish_schooling_simulation
 ### Install the requirements 
 The code relies on different libraries (especially ```xarray``` for data storage and ```tqdm.contrib``` for parallel computing). To install them in a virtual environment (```sim-school-env```), do:
 ```
-conda create -n sim-school-env python=3.11 anaconda
+conda create -n sim-school-env python=3.11
 ```
 then,
 ```
 conda activate sim-school-env
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 Finally create useful folders like this: 
 ```

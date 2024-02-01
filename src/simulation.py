@@ -38,7 +38,6 @@ class Simulation:
             phi = phi,
             R = R,
             b = b,
-            N = N,
         )
 
         self.N = N
@@ -78,7 +77,7 @@ class Simulation:
         
         self.params['v0'] = self.v0_avg
         
-        traj = Trajectory(self.pos, self.vel, self.params, self)
+        traj = Trajectory(self.pos, self.vel, self.params)
         
         if savedata: 
             traj.to_netcdf() #saves the Trajectory object into an xarray dataset (.nc file) 
